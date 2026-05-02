@@ -26,10 +26,22 @@ else
     echo "[setup] conda env ${ENV_NAME} already exists, reusing."
 fi
 
-# Activate (works across bash + conda configurations)
+# Activate. In non-interactive bash, `conda activate` may not relocate PATH
+# reliably, so we resolve the env's bin/python directly to avoid using the
+# base conda's pip/python.
 # shellcheck disable=SC1091
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate "${ENV_NAME}"
+
+ENV_PREFIX="$(conda info --envs | awk -v n="${ENV_NAME}" '$1==n {print $NF}')"
+if [ -z "${ENV_PREFIX}" ] || [ ! -x "${ENV_PREFIX}/bin/python" ]; then
+    echo "[setup] ERROR: cannot locate ${ENV_NAME} python — abort."
+    exit 1
+fi
+ENV_PY="${ENV_PREFIX}/bin/python"
+ENV_PIP="${ENV_PREFIX}/bin/pip"
+echo "[setup] env python: ${ENV_PY}"
+"${ENV_PY}" --version
 
 # Clone repo (only if not already present in cwd)
 if [ ! -d "src" ] || [ ! -f "inference.py" ]; then
@@ -41,10 +53,9 @@ fi
 
 # Python deps — must match Modal runs that achieved +59.50 on dev
 echo "[setup] installing pip dependencies..."
-pip install --upgrade pip
-pip install \
+"${ENV_PY}" -m pip install --upgrade pip
+"${ENV_PIP}" install \
     "torch==2.5.1" \
-    "torchvision==0.20.1" \
     "numpy<2.0" \
     "transformers==4.51.3" \
     "accelerate>=1.0.0" \
@@ -59,7 +70,7 @@ pip install \
 
 # Pre-download VLM weights to local HF cache (no internet at inference).
 echo "[setup] pre-downloading Qwen2.5-VL-7B-AWQ weights..."
-python - <<'PY'
+"${ENV_PY}" - <<'PY'
 from huggingface_hub import snapshot_download
 p = snapshot_download(repo_id="Qwen/Qwen2.5-VL-7B-Instruct-AWQ")
 print(f"[setup] weights ready at {p}")
