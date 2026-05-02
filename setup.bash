@@ -7,7 +7,7 @@ set -e
 
 ENV_NAME="gnr_project_env"
 PY_VER="3.11"
-REPO_URL="https://github.com/TusharBajaj07/gnr638-project.git"
+REPO_URL="https://github.com/TusharBajaj07/gnr638-project-submission.git"
 
 echo "[setup] === GNR 638 Project 1 setup ==="
 echo "[setup] target env: ${ENV_NAME} (python ${PY_VER})"
