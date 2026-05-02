@@ -12,10 +12,16 @@ REPO_URL="https://github.com/TusharBajaj07/gnr638-project-submission.git"
 echo "[setup] === GNR 638 Project 1 setup ==="
 echo "[setup] target env: ${ENV_NAME} (python ${PY_VER})"
 
-# Create conda env if missing
+# Conda 25.x requires Terms of Service acceptance for default channels.
+# Best-effort accept (works on conda >= 25.0); ignore failures on older versions.
+echo "[setup] accepting conda TOS (best-effort)..."
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main 2>/dev/null || true
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r 2>/dev/null || true
+
+# Create conda env if missing — use conda-forge to avoid default-channel TOS issues
 if ! conda env list | awk '{print $1}' | grep -qx "${ENV_NAME}"; then
     echo "[setup] creating conda env ${ENV_NAME}..."
-    conda create -y -n "${ENV_NAME}" python="${PY_VER}"
+    conda create -y -n "${ENV_NAME}" -c conda-forge --override-channels python="${PY_VER}"
 else
     echo "[setup] conda env ${ENV_NAME} already exists, reusing."
 fi
