@@ -21,7 +21,7 @@ conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r 
 # Create conda env if missing — use conda-forge to avoid default-channel TOS issues
 if ! conda env list | awk '{print $1}' | grep -qx "${ENV_NAME}"; then
     echo "[setup] creating conda env ${ENV_NAME}..."
-    conda create -y -n "${ENV_NAME}" -c conda-forge --override-channels python="${PY_VER}"
+    conda create -y -n "${ENV_NAME}" -c conda-forge --override-channels python="${PY_VER}" pip
 else
     echo "[setup] conda env ${ENV_NAME} already exists, reusing."
 fi
